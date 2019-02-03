@@ -1,14 +1,12 @@
 package com.example.android.quakereport;
 
-import java.util.Date;
-
-public class EarthQuake {
+public class Earthquake {
 
     private double mMagnitude = 0;
     private String mLocation = null;
-    private Date mDate = null;
+    private long mTime = 0;
 
-    public EarthQuake()
+    public Earthquake()
     {
 
     }
@@ -23,9 +21,9 @@ public class EarthQuake {
         mLocation = location;
     }
 
-    public void setDate(Date date)
+    public void setTime(Long time)
     {
-        mDate = date;
+        mTime = time;
     }
 
     public double getMagnitude()
@@ -38,8 +36,8 @@ public class EarthQuake {
         return mLocation;
     }
 
-    public Date getDate()
+    public Long getTime()
     {
-        return mDate;
+        return mTime;
     }
 }
