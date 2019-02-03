@@ -17,12 +17,11 @@ package com.example.android.quakereport;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 
 public class EarthquakeActivity extends AppCompatActivity {
 
@@ -33,52 +32,10 @@ public class EarthquakeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.earthquake_activity);
 
-        EarthQuake earthQuake;
+        Earthquake earthquake;
 
         // Create a fake list of earthquake locations.
-        ArrayList<EarthQuake> earthquakes = new ArrayList<>();
-
-        earthQuake = new EarthQuake();
-        earthQuake.setMagnitude(5);
-        earthQuake.setLocation("San Francisco");
-        earthQuake.setDate(Calendar.getInstance().getTime());
-        earthquakes.add(earthQuake);
-
-        earthQuake = new EarthQuake();
-        earthQuake.setMagnitude(5);
-        earthQuake.setLocation("London");
-        earthQuake.setDate(Calendar.getInstance().getTime());
-        earthquakes.add(earthQuake);
-
-        earthQuake = new EarthQuake();
-        earthQuake.setMagnitude(5);
-        earthQuake.setLocation("Tokyo");
-        earthQuake.setDate(Calendar.getInstance().getTime());
-        earthquakes.add(earthQuake);
-
-        earthQuake = new EarthQuake();
-        earthQuake.setMagnitude(5);
-        earthQuake.setLocation("Mexico City");
-        earthQuake.setDate(Calendar.getInstance().getTime());
-        earthquakes.add(earthQuake);
-
-        earthQuake = new EarthQuake();
-        earthQuake.setMagnitude(5);
-        earthQuake.setLocation("Moscow");
-        earthQuake.setDate(Calendar.getInstance().getTime());
-        earthquakes.add(earthQuake);
-
-        earthQuake = new EarthQuake();
-        earthQuake.setMagnitude(5);
-        earthQuake.setLocation("Rio de Janeiro");
-        earthQuake.setDate(Calendar.getInstance().getTime());
-        earthquakes.add(earthQuake);
-
-        earthQuake = new EarthQuake();
-        earthQuake.setMagnitude(5);
-        earthQuake.setLocation("Paris");
-        earthQuake.setDate(Calendar.getInstance().getTime());
-        earthquakes.add(earthQuake);
+        ArrayList<Earthquake> earthquakes = QueryUtils.extractEarthquakes();
 
         // Find a reference to the {@link ListView} in the layout
         ListView earthquakeListView = findViewById(R.id.list);
