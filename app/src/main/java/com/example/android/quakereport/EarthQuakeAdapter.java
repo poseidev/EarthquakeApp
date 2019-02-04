@@ -1,9 +1,7 @@
 package com.example.android.quakereport;
 
 import android.content.Context;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
+import android.graphics.drawable.GradientDrawable;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,9 +19,9 @@ public class EarthQuakeAdapter extends ArrayAdapter<Earthquake> {
 
     public EarthQuakeAdapter(Context context, int resource, ArrayList<Earthquake> objects) {
         super(context, resource, objects);
+
     }
 
-    @NonNull
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View listItemView = convertView;
@@ -39,8 +37,10 @@ public class EarthQuakeAdapter extends ArrayAdapter<Earthquake> {
         TextView magnitudeTextView = listItemView.findViewById(R.id.magnitudeTextView);
         String magnitude = formatMagnitude(currentEarthquake.getMagnitude());
         magnitudeTextView.setText(magnitude);
-        /*Drawable background = magnitudeTextView.getBackground();
-        background.setColorFilter(getMagnitudeColor(currentEarthquake.getMagnitude()), PorterDuff.Mode.ADD);*/
+
+        // Magnitude background
+        GradientDrawable magnitudeBackground = (GradientDrawable) magnitudeTextView.getBackground();
+        magnitudeBackground.setColor(getMagnitudeColor(currentEarthquake.getMagnitude()));
 
         // Primary Location
         TextView primaryLocationTextView = listItemView.findViewById(R.id.primaryLocationTextView);

@@ -5,6 +5,7 @@ public class Earthquake {
     private double mMagnitude = 0;
     private String mLocation = null;
     private long mTime = 0;
+    private String mURL = "";
 
     public Earthquake()
     {
@@ -26,6 +27,8 @@ public class Earthquake {
         mTime = time;
     }
 
+    public void setURL(String url) { mURL = url; }
+
     public double getMagnitude()
     {
         return mMagnitude;
@@ -39,5 +42,10 @@ public class Earthquake {
     public Long getTime()
     {
         return mTime;
+    }
+
+    public String getURL()
+    {
+        return mURL;
     }
 }
