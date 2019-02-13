@@ -13,11 +13,12 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 
 public class EarthQuakeAdapter extends ArrayAdapter<Earthquake> {
 
-    public EarthQuakeAdapter(Context context, int resource, ArrayList<Earthquake> objects) {
+    public EarthQuakeAdapter(Context context, int resource, List<Earthquake> objects) {
         super(context, resource, objects);
 
     }

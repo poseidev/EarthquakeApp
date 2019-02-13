@@ -6,7 +6,16 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Helper methods related to requesting and receiving earthquake data from USGS.
@@ -38,10 +47,11 @@ public final class QueryUtils {
      * Return a list of {@link Earthquake} objects that has been built up from
      * parsing a JSON response.
      */
-    public static ArrayList<Earthquake> extractEarthquakes() {
+    public static List<Earthquake> extractEarthquakes(String jsonResponse) {
         // Create an empty ArrayList that we can start adding earthquakes to
 
-        ArrayList<Earthquake> earthquakes = new ArrayList<>();
+        List<Earthquake> earthquakes = new ArrayList<Earthquake>() {
+        };
 
         // Try to parse the SAMPLE_JSON_RESPONSE. If there's a problem with the way the JSON
         // is formatted, a JSONException exception object will be thrown.
@@ -50,7 +60,7 @@ public final class QueryUtils {
         try {
             // TODO: Parse the response given by the SAMPLE_JSON_RESPONSE string and
             // build up a list of Earthquake objects with the corresponding data.
-            JSONObject jsonObject = new JSONObject(SAMPLE_JSON_RESPONSE);
+            JSONObject jsonObject = new JSONObject(jsonResponse);
 
             JSONArray features = jsonObject.getJSONArray("features");
 
@@ -82,5 +92,74 @@ public final class QueryUtils {
 
         // Return the list of earthquakes
         return earthquakes;
+    }
+
+    public static URL createURL(String stringUrl)
+    {
+        URL url;
+
+        try {
+            url = new URL(stringUrl);
+        }
+        catch(MalformedURLException e) {
+            return null;
+        }
+
+        return url;
+    }
+
+    public static String makeHttpRequest(URL url) throws IOException {
+        String jsonResponse = "";
+
+        HttpURLConnection urlConnection = null;
+        InputStream inputStream = null;
+
+        try
+        {
+            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setReadTimeout(1000);
+            urlConnection.setConnectTimeout(5000);
+            urlConnection.connect();
+
+            if(urlConnection.getResponseCode() == 200) {
+                inputStream = urlConnection.getInputStream();
+                jsonResponse = readFromStream(inputStream);
+            }
+        }
+        catch(IOException e)
+        {
+            Log.e("makeHttpRequest", e.getMessage());
+        }
+        finally
+        {
+            if(urlConnection != null) {
+                urlConnection.disconnect();
+            }
+
+            if (inputStream != null) {
+                inputStream.close();
+            }
+        }
+
+        return jsonResponse;
+    }
+
+    public static String readFromStream(InputStream inputStream) throws IOException {
+        StringBuilder output = new StringBuilder();
+
+        if(inputStream != null) {
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+
+            String line  = reader.readLine();
+
+            while(line != null) {
+                output.append(line);
+                line = reader.readLine();
+            }
+        }
+
+        return output.toString();
     }
 }
