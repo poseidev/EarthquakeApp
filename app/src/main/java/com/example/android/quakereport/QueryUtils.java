@@ -1,5 +1,6 @@
 package com.example.android.quakereport;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -21,6 +22,9 @@ import java.util.List;
  * Helper methods related to requesting and receiving earthquake data from USGS.
  */
 public final class QueryUtils {
+
+    private static final String LOG_TAG = QueryUtils.class.getSimpleName();
+
     /** Sample JSON response for a USGS query */
     private static final String SAMPLE_JSON_RESPONSE =
             "{\"type\":\"FeatureCollection\",\"metadata\":{\"generated\":1462295443000,\"url\":\"http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&starttime=2016-01-01&endtime=2016-01-31&minmag=6&limit=10\",\"title\":\"USGS Earthquakes\",\"status\":200,\"api\":\"1.5.2\",\"limit\":10,\"offset\":1,\"count\":10},\"features\":[{\"type\":\"Feature\",\"properties\":{\"mag\":7.2,\"place\":\"88km N of Yelizovo, Russia\",\"time\":1454124312220,\"updated\":1460674294040,\"tz\":720,\"url\":\"http://earthquake.usgs.gov/earthquakes/eventpage/us20004vvx\",\"detail\":\"http://earthquake.usgs.gov/fdsnws/event/1/query?eventid=us20004vvx&format=geojson\",\"felt\":2,\"cdi\":3.4,\"mmi\":5.82,\"alert\":\"green\",\"status\":\"reviewed\",\"tsunami\":1,\"sig\":798,\"net\":\"us\",\"code\":\"20004vvx\",\"ids\":\",at00o1qxho,pt16030050,us20004vvx,gcmt20160130032510,\",\"sources\":\",at,pt,us,gcmt,\",\"types\":\",cap,dyfi,finite-fault,general-link,general-text,geoserve,impact-link,impact-text,losspager,moment-tensor,nearby-cities,origin,phase-data,shakemap,tectonic-summary,\",\"nst\":null,\"dmin\":0.958,\"rms\":1.19,\"gap\":17,\"magType\":\"mww\",\"type\":\"earthquake\",\"title\":\"M 7.2 - 88km N of Yelizovo, Russia\"},\"geometry\":{\"type\":\"Point\",\"coordinates\":[158.5463,53.9776,177]},\"id\":\"us20004vvx\"},\n" +
@@ -44,22 +48,47 @@ public final class QueryUtils {
     }
 
     /**
+     * Query the USGS dataset and return a list of {@link Earthquake} objects.
+     */
+    public static List<Earthquake> fetchEarthquakeData(String requestUrl) {
+
+        // Create URL object
+        URL url = createURL(requestUrl);
+
+        // Perform HTTP request to the URL and receive a JSON response back
+        String jsonResponse = null;
+
+        try {
+            jsonResponse = makeHttpRequest(url);
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "Problem making the HTTP request.", e);
+        }
+
+        // Extract relevant fields from the JSON response and create a list of {@link Earthquake}s
+        List<Earthquake> earthquakes = extractFeatureFromJson(jsonResponse);
+
+        // Return the list of {@link Earthquake}s
+        return earthquakes;
+    }
+
+    /**
      * Return a list of {@link Earthquake} objects that has been built up from
      * parsing a JSON response.
      */
-    public static List<Earthquake> extractEarthquakes(String jsonResponse) {
-        // Create an empty ArrayList that we can start adding earthquakes to
+    public static List<Earthquake> extractFeatureFromJson(String jsonResponse) {
+        // If the JSON string is empty/null, return early
+        if (TextUtils.isEmpty(jsonResponse)) {
+            return null;
+        }
 
-        List<Earthquake> earthquakes = new ArrayList<Earthquake>() {
-        };
+        // Create an empty ArrayList that we can start adding earthquakes to
+        List<Earthquake> earthquakes = new ArrayList<>();
 
         // Try to parse the SAMPLE_JSON_RESPONSE. If there's a problem with the way the JSON
         // is formatted, a JSONException exception object will be thrown.
         // Catch the exception so the app doesn't crash, and print the error message to the logs.
 
         try {
-            // TODO: Parse the response given by the SAMPLE_JSON_RESPONSE string and
-            // build up a list of Earthquake objects with the corresponding data.
             JSONObject jsonObject = new JSONObject(jsonResponse);
 
             JSONArray features = jsonObject.getJSONArray("features");
@@ -67,12 +96,12 @@ public final class QueryUtils {
             for(int i = 0; i < features.length(); i++) {
                 JSONObject earthquakeObject = features.getJSONObject(i);
 
-                JSONObject propertiesObject = earthquakeObject.getJSONObject("properties");
+                JSONObject properties = earthquakeObject.getJSONObject("properties");
 
-                Double magnitude = propertiesObject.getDouble("mag");
-                String location = propertiesObject.getString("place");
-                Long time = propertiesObject.getLong("time");
-                String url = propertiesObject.getString("url");
+                Double magnitude = properties.getDouble("mag");
+                String location = properties.getString("place");
+                Long time = properties.getLong("time");
+                String url = properties.getString("url");
 
                 Earthquake earthquake = new Earthquake();
                 earthquake.setLocation(location);
@@ -96,13 +125,13 @@ public final class QueryUtils {
 
     public static URL createURL(String stringUrl)
     {
-        URL url;
+        URL url = null;
 
         try {
             url = new URL(stringUrl);
         }
         catch(MalformedURLException e) {
-            return null;
+            Log.e(LOG_TAG, "Problem building the URL", e);
         }
 
         return url;
@@ -122,14 +151,18 @@ public final class QueryUtils {
             urlConnection.setConnectTimeout(5000);
             urlConnection.connect();
 
+            // If the request was successful (response code 200),
+            // then read the input stream and parse the response.
             if(urlConnection.getResponseCode() == 200) {
                 inputStream = urlConnection.getInputStream();
                 jsonResponse = readFromStream(inputStream);
+            } else {
+                Log.e(LOG_TAG, "Error response code: " + urlConnection.getResponseCode());
             }
         }
         catch(IOException e)
         {
-            Log.e("makeHttpRequest", e.getMessage());
+            Log.e(LOG_TAG, "Problem retrieving the earthquake JSON results.", e);
         }
         finally
         {
@@ -138,6 +171,9 @@ public final class QueryUtils {
             }
 
             if (inputStream != null) {
+                // Closing the input stream could throw an IOException, which is why
+                // the makeHttpRequest(URL url) method signature specifies than an IOException
+                // could be thrown.
                 inputStream.close();
             }
         }
