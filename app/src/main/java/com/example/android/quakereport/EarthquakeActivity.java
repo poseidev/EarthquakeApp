@@ -17,24 +17,28 @@ package com.example.android.quakereport;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EarthquakeActivity extends AppCompatActivity {
+public class EarthquakeActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Earthquake>> {
 
-    private static final String LOG_TAG = EarthquakeActivity.class.getName();
+    private final String LOG_TAG = EarthquakeActivity.class.getSimpleName();
 
-    private static final String USGS_REQUEST_URL =
+    private static final int EARTHQUAKE_LOADER_ID = 1;
+
+    private final String USGS_REQUEST_URL =
             "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
 
     /** Adapter for the list of earthquakes */
@@ -42,13 +46,16 @@ public class EarthquakeActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(LOG_TAG, "onCreate");
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.earthquake_activity);
 
         updateEarthquakeList();
 
-        EarthquakeAsyncTask asyncTask = new EarthquakeAsyncTask();
-        asyncTask.execute(USGS_REQUEST_URL);
+        LoaderManager.getInstance(this).initLoader(EARTHQUAKE_LOADER_ID, null, this).forceLoad();
+
+        Log.i(LOG_TAG, "initLoader");
     }
 
     private void updateEarthquakeList()
@@ -63,6 +70,9 @@ public class EarthquakeActivity extends AppCompatActivity {
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
         earthquakeListView.setAdapter(mAdapter);
+
+        /*TextView textView = findViewById(R.id.noEarthquakeTextView);
+        earthquakeListView.setEmptyView(textView);*/
 
         // Set an item click listener on the ListView, which sends an intent to a web
         // to open a website with more information about the selected earthquake.
@@ -87,23 +97,27 @@ public class EarthquakeActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    private class EarthquakeAsyncTask extends AsyncTask<String, Void, List<Earthquake>> {
-        @Override
-        protected List<Earthquake> doInBackground(String... urls) {
-            if(urls.length < 1 || urls[0] == null) {
-                return null;
-            }
+    @NonNull
+    @Override
+    public Loader<List<Earthquake>> onCreateLoader(int i, @Nullable Bundle bundle) {
+        Log.i(LOG_TAG, "onCreateLoader");
+        return new EarthquakeLoader(EarthquakeActivity.this, USGS_REQUEST_URL);
+    }
 
-            return QueryUtils.fetchEarthquakeData(urls[0]);
-        }
+    @Override
+    public void onLoadFinished(@NonNull Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        mAdapter.addAll(earthquakes);
+        Log.i(LOG_TAG, "onLoadFinished");
+    }
 
-        @Override
-        protected void onPostExecute(List<Earthquake> earthquakes) {
-            mAdapter.clear();
+    @Override
+    public void onLoaderReset(@NonNull Loader<List<Earthquake>> loader) {
+        // Loader reset, so we can clear out our existing data.
+        mAdapter.clear();
 
-            if(earthquakes != null && !earthquakes.isEmpty()) {
-                mAdapter.addAll(earthquakes);
-            }
-        }
+        /*TextView textView = findViewById(R.id.noEarthquakeTextView);
+        textView.setText(getString(R.string.textNoEarthquake));*/
+
+        Log.i(LOG_TAG, "onLoaderReset");
     }
 }
