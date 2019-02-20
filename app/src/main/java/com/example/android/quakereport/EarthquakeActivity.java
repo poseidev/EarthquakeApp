@@ -15,7 +15,10 @@
  */
 package com.example.android.quakereport;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -27,6 +30,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -37,6 +41,8 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
     private final String LOG_TAG = EarthquakeActivity.class.getSimpleName();
 
     private static final int EARTHQUAKE_LOADER_ID = 1;
+
+    private TextView mEmptyStateTextview;
 
     private final String USGS_REQUEST_URL =
             "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
@@ -51,9 +57,24 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
         super.onCreate(savedInstanceState);
         setContentView(R.layout.earthquake_activity);
 
-        updateEarthquakeList();
+        ConnectivityManager cm = (ConnectivityManager) getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+        boolean isConnected = networkInfo != null &&
+                            networkInfo.isConnected();
 
-        LoaderManager.getInstance(this).initLoader(EARTHQUAKE_LOADER_ID, null, this).forceLoad();
+        mEmptyStateTextview = findViewById(R.id.noEarthquakeTextView);
+
+        if(isConnected) {
+            updateEarthquakeList();
+
+            LoaderManager.getInstance(this).initLoader(EARTHQUAKE_LOADER_ID, null, this).forceLoad();
+        }
+        else {
+            ProgressBar progressBar = findViewById(R.id.loadingSpinner);
+            progressBar.setVisibility(View.GONE);
+
+            mEmptyStateTextview.setText("No internet connection.");
+        }
 
         Log.i(LOG_TAG, "initLoader");
     }
@@ -61,7 +82,9 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
     private void updateEarthquakeList()
     {
         // Find a reference to the {@link ListView} in the layout
+        // Find a reference to the {@link ListView} in the layout
         ListView earthquakeListView = findViewById(R.id.list);
+        earthquakeListView.setEmptyView(mEmptyStateTextview);
 
         // Create a new {@link ArrayAdapter} of earthquakes
         mAdapter = new EarthquakeAdapter(
@@ -70,9 +93,6 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
         earthquakeListView.setAdapter(mAdapter);
-
-        /*TextView textView = findViewById(R.id.noEarthquakeTextView);
-        earthquakeListView.setEmptyView(textView);*/
 
         // Set an item click listener on the ListView, which sends an intent to a web
         // to open a website with more information about the selected earthquake.
@@ -108,15 +128,17 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderManag
     public void onLoadFinished(@NonNull Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
         mAdapter.addAll(earthquakes);
         Log.i(LOG_TAG, "onLoadFinished");
+
+        mEmptyStateTextview.setText(getString(R.string.textNoEarthquake));
+
+        ProgressBar progressBar = findViewById(R.id.loadingSpinner);
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void onLoaderReset(@NonNull Loader<List<Earthquake>> loader) {
         // Loader reset, so we can clear out our existing data.
         mAdapter.clear();
-
-        /*TextView textView = findViewById(R.id.noEarthquakeTextView);
-        textView.setText(getString(R.string.textNoEarthquake));*/
 
         Log.i(LOG_TAG, "onLoaderReset");
     }

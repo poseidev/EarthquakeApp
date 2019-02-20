@@ -16,4 +16,5 @@
 <resources>
     <string name="app_name">Quake Report</string>
     <string name="characterSetUTF8">UTF-8</string>
+    <string name="textNoEarthquake">No earthquakes found</string>
 </resources>
