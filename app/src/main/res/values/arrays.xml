@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="settingsOrderByLabels">
+        <item>@string/settingsOrderByMagnitudeLabel</item>
+        <item>@string/settingsOrderByMostRecentLabel</item>
+    </string-array>
+
+    <string-array name="settingsOrderByValues">
+        <item>@string/settingsOrderByMagnitudeValue</item>
+        <item>@string/settingsOrderByMostRecentValue</item>
+    </string-array>
+</resources>

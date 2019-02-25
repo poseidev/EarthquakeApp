@@ -156,8 +156,8 @@ public final class QueryUtils {
         {
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
-            urlConnection.setReadTimeout(1000);
-            urlConnection.setConnectTimeout(5000);
+            urlConnection.setReadTimeout(10000);
+            urlConnection.setConnectTimeout(15000);
             urlConnection.connect();
 
             // If the request was successful (response code 200),
