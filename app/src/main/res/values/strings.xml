@@ -17,4 +17,27 @@
     <string name="app_name">Quake Report</string>
     <string name="characterSetUTF8">UTF-8</string>
     <string name="textNoEarthquake">No earthquakes found</string>
+
+    <!-- Settings Menu Item [CHAR LIMIT=NONE] -->
+    <string name="settingsMenuItem">Settings</string>
+
+    <!--Settings Activity Title [CHAR LIMIT=NONE] -->
+    <string name="settingsTitle">Earthquake Settings</string>
+
+    <string name="settingsMinMagnitudeLabel">Minimum Magnitude</string>
+    <string name="settingsMinMagnitudeKey" translatable="false">min_magnitude</string>
+    <string name="settingsMinMagnitudeDefault" translatable="false">6</string>
+
+    <!-- Strings For Order-By Preference [CHAR LIMIT=30] -->
+    <string name="settingsOrderByLabel">Order By</string>
+    <string name="settingsOrderByKey" translatable="false">order_by</string>
+    <string name="settingsOrderByDefault" translatable="false">@string/settingsOrderByMostRecentValue</string>
+
+    <!-- Label for order-by magnitude option [CHAR LIMIT=20] -->
+    <string name="settingsOrderByMagnitudeLabel">Magnitude</string>
+    <string name="settingsOrderByMagnitudeValue" translatable="false">magnitude</string>
+
+    <!-- Label for order-by magnitude option [CHAR LIMIT=20] -->
+    <string name="settingsOrderByMostRecentLabel">Most Recent</string>
+    <string name="settingsOrderByMostRecentValue" translatable="false">time</string>
 </resources>
